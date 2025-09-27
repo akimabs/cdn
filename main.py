@@ -2,22 +2,23 @@ import ffmpeg
 import subprocess
 
 # Input file
-input_file = "soundtrack.mp3"
-output_file = "trimmed_soundtrack.mp3"
+input_file = "backsound.mp3"
+output_file = "fadein_backsound.mp3"
 
-# Start time: 1 minute 26 seconds = 86 seconds
-start_time = 86
+# Fade in duration: 2 detik
+fade_duration = 2
 
-# Use ffmpeg to trim from 1:26 to end
+# Use ffmpeg to add fade in only (no trim)
 try:
     (
         ffmpeg
-        .input(input_file, ss=start_time)
+        .input(input_file)
+        .filter('afade', t='in', st=0, d=fade_duration)
         .output(output_file, acodec='mp3')
         .overwrite_output()
         .run(quiet=True)
     )
-    print(f"Trim selesai. File disimpan sebagai {output_file}")
+    print(f"Fade in selesai. File disimpan sebagai {output_file}")
 except ffmpeg.Error as e:
     print(f"Error: {e}")
     print("Trying with subprocess...")
@@ -25,9 +26,9 @@ except ffmpeg.Error as e:
     # Fallback to subprocess
     cmd = [
         'ffmpeg', '-i', input_file, 
-        '-ss', str(start_time), 
-        '-c', 'copy', 
+        '-af', f'afade=t=in:st=0:d={fade_duration}',
+        '-c:a', 'mp3',
         output_file, '-y'
     ]
     subprocess.run(cmd, check=True)
-    print(f"Trim selesai. File disimpan sebagai {output_file}")
+    print(f"Fade in selesai. File disimpan sebagai {output_file}")
